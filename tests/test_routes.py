@@ -124,3 +124,55 @@ class TestAccountService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     # ADD YOUR TEST CASES HERE ...
+    def test_list_all_accounts(self):
+        """It should list all the accounts"""
+        account1 = AccountFactory()
+        account2 = AccountFactory()
+        self.client.post(BASE_URL, json=account1.serialize())
+        self.client.post(BASE_URL, json=account2.serialize())
+
+        # Make a GET request to the /accounts endpoint
+        response = self.client.get(BASE_URL)
+
+        # Check the response status and data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 2)  # We created 2 accounts
+        self.assertEqual(data[0]["name"], account1.name)
+        self.assertEqual(data[1]["name"], account2.name)
+
+    def test_list_accounts_empty(self):
+        """It should return an empty list when no accounts exist"""
+        # Ensure no accounts exist
+        response = self.client.get(BASE_URL)
+
+        # Check the response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data, [])  # Should return an empty list
+
+    def test_read_account(self):
+        """It should read an account by its ID"""
+        account = AccountFactory()
+        response = self.client.post(BASE_URL, json=account.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Extract the created account's ID
+        account_id = response.get_json()["id"]
+
+        response = self.client.get(f"{BASE_URL}/{account_id}")  # Make a GET request to fetch by ID
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.get_json()
+        self.assertEqual(data["id"], account_id)
+        self.assertEqual(data["name"], account.name)
+        self.assertEqual(data["email"], account.email)
+        self.assertEqual(data["address"], account.address)
+        self.assertEqual(data["phone_number"], account.phone_number)
+        self.assertEqual(data["date_joined"], str(account.date_joined))
+
+
+
+
+
