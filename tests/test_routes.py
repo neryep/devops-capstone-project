@@ -172,7 +172,36 @@ class TestAccountService(TestCase):
         self.assertEqual(data["phone_number"], account.phone_number)
         self.assertEqual(data["date_joined"], str(account.date_joined))
 
+    def test_update_account(self):
+        """It should update an account by its ID"""
+        # Step 1: Create a test account
+        account = AccountFactory()
+        response = self.client.post(BASE_URL, json=account.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        # Step 2: Extract account ID and prepare updated data
+        new_account = response.get_json() # extract JSON response
+        account_id = new_account["id"]
+        updated_data = {
+            "name": "Updated Name",
+            "email": "updated_email@example.com",
+            "address": "Updated Address",
+            "phone_number": "1234567890",
+            "date_joined": new_account["date_joined"],  # Keep original date
+        }
 
+        # Step 3: Send PUT request to update the account
+        update_response = self.client.put(f"{BASE_URL}/{account_id}", json=updated_data)
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK) #verify success
 
+        updated_account = update_response.get_json()
+        self.assertEqual(updated_account["name"], updated_data["name"])
+        self.assertEqual(updated_account["email"], updated_data["email"])
+        self.assertEqual(updated_account["address"], updated_data["address"])
+        self.assertEqual(updated_account["phone_number"], updated_data["phone_number"])
+        self.assertEqual(updated_account["date_joined"], updated_data["date_joined"])
 
+        # Step 5: Test 404 Not Found for non-existent account
+        invalid_id = 99999  # Non-existent ID
+        response = self.client.put(f"{BASE_URL}/{invalid_id}", json=updated_data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
