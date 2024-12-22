@@ -97,15 +97,50 @@ def get_account(account_id):
 ######################################################################
 
 # ... place you code here to UPDATE an account ...
-@app.route("/accounts/<int:account_id>", methods=["GET"])
+@app.route("/accounts/<int:account_id>", methods=["PUT"])
+def update_account(account_id):
+    """
+    It should update an account by its ID
+    """
+    app.logger.info("Request to update Account with id: %s", account_id)
+
+    account = Account.find(account_id)
+    if not account: # If account not found, return 404
+        app.logger.error("Account with id %s not found.", account_id)
+        abort(status.HTTP_404_NOT_FOUND, f"Account with id {account_id} not found")
+
+     # Deserialize input data and update account
+    app.logger.debug("Account found. Attempting to update.")
+    account.deserialize(request.get_json())
+    account.update()  # Save the changes in the database
+
+    # Return the updated account with HTTP 200 status
+    app.logger.info("Account with id %s updated successfully.", account_id)
+    return jsonify(account.serialize()), status.HTTP_200_OK
 
 ######################################################################
 # DELETE AN ACCOUNT
 ######################################################################
 
-# ... place you code here to DELETE an account ...
+@app.route("/accounts/<int:account_id>", methods=["DELETE"])
+def delete_account(account_id):
+    """
+    It should delete an account by its ID
+    """
+    app.logger.info("Request to delete Account with id: %s", account_id)
 
+    # Find the account by ID
+    account = Account.find(account_id)
+    if not account:
+        return "", status.HTTP_204_NO_CONTENT  # Return 204 even if the account doesn't exist
 
+    # Delete the account
+    account.delete()
+
+    # Return 204 No Content
+    return "", status.HTTP_204_NO_CONTENT
+
+    
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
