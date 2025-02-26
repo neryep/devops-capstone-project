@@ -180,7 +180,7 @@ class TestAccountService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Step 2: Extract account ID and prepare updated data
-        new_account = response.get_json() # extract JSON response
+        new_account = response.get_json()  # extract JSON response
         account_id = new_account["id"]
         updated_data = {
             "name": "Updated Name",
@@ -192,7 +192,7 @@ class TestAccountService(TestCase):
 
         # Step 3: Send PUT request to update the account
         update_response = self.client.put(f"{BASE_URL}/{account_id}", json=updated_data)
-        self.assertEqual(update_response.status_code, status.HTTP_200_OK) #verify success
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)  # verify success
 
         updated_account = update_response.get_json()
         self.assertEqual(updated_account["name"], updated_data["name"])
